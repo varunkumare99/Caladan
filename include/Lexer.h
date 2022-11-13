@@ -18,6 +18,9 @@ public:
 
     tok_identifier = -4,
     tok_number = -5,
+
+    tok_if = -6,
+    tok_else = -7
   };
 
   int getToken();

@@ -14,6 +14,10 @@ int Lexer::getToken() {
       return tok_def;
     if (m_identifierStr == "extern")
       return tok_extern;
+    if (m_identifierStr == "if")
+      return tok_if;
+    if (m_identifierStr == "else")
+      return tok_else;
     return tok_identifier;
   }
 

@@ -2,6 +2,9 @@
 - Language built using LLVM.
 ## Features
 - Functions
+- optimizations (peephole, reassociate expressions, eliminate common
+   subexpressions, delete unreachable blocks in CFG etc)
+- if-else
 ### Types
 - int 64bit
 
@@ -15,7 +18,6 @@
 - greater than (>)
 
 ### TODO
-- [ ] if-else
 - [ ] for
 - [ ] break
 - [ ] continue
@@ -39,4 +41,17 @@ ninja
 >>> foo(3, 4);
 Result : 49
 
+```
+```
+>>> func foo(x) {
+	if x > 10 {
+		x + 20
+	}
+	else {
+		x + 10
+	}
+}
+
+>>> foo(30);
+Result : 50
 ```

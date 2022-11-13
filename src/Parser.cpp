@@ -3,6 +3,7 @@
 #include "CallExpressionAST.h"
 #include "CodeGeneration.h"
 #include "FunctionDefinitionAST.h"
+#include "IfExpressionAST.h"
 #include "NumberExpressionAST.h"
 #include "PrototypeAST.h"
 #include "VariableExpressionAST.h"
@@ -118,6 +119,8 @@ std::unique_ptr<ExpressionAST> Parser::parsePrimary() {
     return parseNumberExpression();
   case '(':
     return parseParenExpression();
+  case Lexer::tok_if:
+    return parseIfExpression();
   }
 }
 std::unique_ptr<ExpressionAST> Parser::parseExpression() {
@@ -146,6 +149,44 @@ std::unique_ptr<PrototypeAST> Parser::parsePrototype() {
 
   getNextToken(); // consume ')'
   return std::make_unique<PrototypeAST>(functionName, std::move(argNames));
+}
+
+std::unique_ptr<ExpressionAST> Parser::parseIfExpression() {
+  getNextToken(); // eat the if
+
+  auto condExpr = parseExpression();
+  if (!condExpr)
+    return nullptr;
+
+  if (m_currentToken != '{')
+    return logError("Expected '{' after if condition");
+  getNextToken(); // consume '{'
+
+  auto ifExpr = parseExpression();
+  if (!ifExpr)
+    return nullptr;
+
+  if (m_currentToken != '}')
+    return logError("Expected '}' after if condition");
+  getNextToken(); // consume '}'
+
+  if (m_currentToken != Lexer::tok_else)
+    return logError("Expected else");
+  getNextToken(); // consume 'else'
+
+  if (m_currentToken != '{')
+    return logError("Expected '{' after if condition");
+  getNextToken(); // consume '{'
+
+  auto elseExpr = parseExpression();
+  if (!elseExpr)
+    return nullptr;
+
+  /* if (m_currentToken != '}') */
+  /* 	return logError("Expected '}' after if condition"); */
+
+  return std::make_unique<IfExpressionAST>(
+      std::move(condExpr), std::move(ifExpr), std::move(elseExpr));
 }
 
 std::unique_ptr<FunctionDefinitionAST> Parser::parseDefinition() {
