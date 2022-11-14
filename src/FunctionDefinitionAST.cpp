@@ -17,8 +17,17 @@ Function *FunctionDefinitionAST::codegen() {
   CodeGeneration::Builder->SetInsertPoint(basicBlock);
 
   CodeGeneration::NamedValues.clear();
-  for (auto &arg : currFunction->args())
-    CodeGeneration::NamedValues[std::string(arg.getName())] = &arg;
+  for (auto &arg : currFunction->args()) {
+    // Create an alloca for this variable
+    AllocaInst *alloca =
+        CodeGeneration::createEntryBlockAlloca(currFunction, arg.getName());
+
+    // Store the initValue into the variable
+    CodeGeneration::Builder->CreateStore(&arg, alloca);
+
+    // add to symbol table
+    CodeGeneration::NamedValues[std::string(arg.getName())] = alloca;
+  }
 
   if (Value *retVal = m_body->codegen()) {
     CodeGeneration::Builder->CreateRet(retVal);

@@ -20,6 +20,8 @@ int Lexer::getToken() {
       return tok_else;
     if (m_identifierStr == "for")
       return tok_for;
+    if (m_identifierStr == "var")
+      return tok_var;
     return tok_identifier;
   }
 

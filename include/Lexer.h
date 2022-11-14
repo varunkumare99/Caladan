@@ -22,7 +22,9 @@ public:
     tok_if = -6,
     tok_else = -7,
 
-    tok_for = -8
+    tok_for = -8,
+
+    tok_var = -9
   };
 
   int getToken();

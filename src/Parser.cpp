@@ -7,11 +7,12 @@
 #include "IfExpressionAST.h"
 #include "NumberExpressionAST.h"
 #include "PrototypeAST.h"
+#include "VarExpressionAST.h"
 #include "VariableExpressionAST.h"
 #include <memory>
 
 std::map<int, int> Parser::m_binaryOpPrecedence{
-    {'>', 20}, {'<', 20}, {'+', 20}, {'-', 20}, {'*', 40}, {'/', 40}};
+    {'=', 2}, {'>', 20}, {'<', 20}, {'+', 20}, {'-', 20}, {'*', 40}, {'/', 40}};
 
 int Parser::getNextToken() { return m_currentToken = m_lexer.getToken(); }
 
@@ -124,6 +125,8 @@ std::unique_ptr<ExpressionAST> Parser::parsePrimary() {
     return parseIfExpression();
   case Lexer::tok_for:
     return parseForExpression();
+  case Lexer::tok_var:
+    return parseVarExpression();
   }
 }
 std::unique_ptr<ExpressionAST> Parser::parseExpression() {
@@ -131,6 +134,53 @@ std::unique_ptr<ExpressionAST> Parser::parseExpression() {
   if (!lhsExpr)
     return nullptr;
   return parseBinaryOperationRHS(0, std::move(lhsExpr));
+}
+
+std::unique_ptr<ExpressionAST> Parser::parseVarExpression() {
+  getNextToken(); // consume 'var'
+
+  std::vector<std::pair<std::string, std::unique_ptr<ExpressionAST>>> varNames;
+
+  // At least one variable name is required
+  if (m_currentToken != Lexer::tok_identifier)
+    return logError("expected identifier after var");
+
+  while (true) {
+    std::string varName = m_lexer.getIdentifierStr();
+    getNextToken(); // consume 'identifier'
+
+    // Read the optional initializer
+    std::unique_ptr<ExpressionAST> initExpr = nullptr;
+    if (m_currentToken == '=') {
+      getNextToken(); // consume '='
+
+      initExpr = parseExpression();
+      if (!initExpr)
+        return nullptr;
+    }
+
+    varNames.push_back(std::make_pair(varName, std::move(initExpr)));
+
+    // End of var list, exit loop
+    if (m_currentToken != ',')
+      break;
+    getNextToken(); // eat the ','
+
+    if (m_currentToken != Lexer::tok_identifier)
+      return logError("expected identifier list after var");
+  }
+
+  if (m_currentToken != '{')
+    return logError("expected '{' after var declaration");
+  getNextToken(); // consume '{'
+
+  auto bodyExpr = parseExpression();
+  if (!bodyExpr)
+    return nullptr;
+
+  getNextToken(); // consume '}' end of var
+  return std::make_unique<VarExpressionsAST>(std::move(varNames),
+                                             std::move(bodyExpr));
 }
 
 std::unique_ptr<PrototypeAST> Parser::parsePrototype() {

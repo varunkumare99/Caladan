@@ -16,15 +16,16 @@ namespace CodeGeneration {
 extern std::unique_ptr<LLVMContext> TheContext;
 extern std::unique_ptr<Module> TheModule;
 extern std::unique_ptr<IRBuilder<>> Builder;
-extern std::map<std::string, Value *> NamedValues;
+extern std::map<std::string, AllocaInst *> NamedValues;
 extern std::unique_ptr<legacy::FunctionPassManager> TheFPM;
 extern std::map<std::string, std::unique_ptr<PrototypeAST>> FunctionProtos;
 extern std::unique_ptr<KaleidoscopeJIT> TheJIT;
 extern ExitOnError ExitOnErr;
 
-extern Value *logErrorV(const char *str);
-extern Function *getFunction(std::string Name);
+Value *logErrorV(const char *str);
+Function *getFunction(std::string Name);
 void initializeModuleAndPassManager(void);
+AllocaInst *createEntryBlockAlloca(Function *currFunction, StringRef varName);
 }; // namespace CodeGeneration
 
 #endif

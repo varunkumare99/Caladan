@@ -10,6 +10,7 @@ private:
 
 public:
   VariableExpressionAST(const std::string &name) : m_name{name} {}
+  const std::string &getVariableName() const { return m_name; }
   virtual Value *codegen() override;
 };
 

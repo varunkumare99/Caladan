@@ -2,8 +2,9 @@
 #include "CodeGeneration.h"
 
 Value *VariableExpressionAST::codegen() {
-  Value *variable = CodeGeneration::NamedValues[m_name];
+  AllocaInst *variable = CodeGeneration::NamedValues[m_name];
   if (!variable)
     return CodeGeneration::logErrorV("unknown variable name");
-  return variable;
+  return CodeGeneration::Builder->CreateLoad(variable->getAllocatedType(),
+                                             variable, m_name.c_str());
 }

@@ -2,13 +2,20 @@
 #include "CodeGeneration.h"
 
 Value *ForExpressionsAST::codegen() {
+  Function *currFunction =
+      CodeGeneration::Builder->GetInsertBlock()->getParent();
+
+  /* Create alloca for variable */
+  AllocaInst *alloca =
+      CodeGeneration::createEntryBlockAlloca(currFunction, m_varName);
+
   /* emit code for start value */
   Value *startVal = m_startExpr->codegen();
   if (!startVal)
     return nullptr;
 
-  Function *currFunction =
-      CodeGeneration::Builder->GetInsertBlock()->getParent();
+  CodeGeneration::Builder->CreateStore(startVal, alloca);
+
   BasicBlock *preHeaderBB = CodeGeneration::Builder->GetInsertBlock();
 
   /* Create loop entry BasicBlock*/
@@ -18,16 +25,10 @@ Value *ForExpressionsAST::codegen() {
   CodeGeneration::Builder->CreateBr(loopHeaderBasicB);
   CodeGeneration::Builder->SetInsertPoint(loopHeaderBasicB);
 
-  PHINode *variable = CodeGeneration::Builder->CreatePHI(
-      Type::getInt64Ty(*CodeGeneration::TheContext), 2, m_varName);
-
-  /* add initial value (start value) to phinode */
-  variable->addIncoming(startVal, preHeaderBB);
-
   /* if a variable exists with same name as for variable, then save it , and
    * restore it later */
-  Value *oldVarValue = CodeGeneration::NamedValues[m_varName];
-  CodeGeneration::NamedValues[m_varName] = variable;
+  AllocaInst *oldVarValue = CodeGeneration::NamedValues[m_varName];
+  CodeGeneration::NamedValues[m_varName] = alloca;
 
   /* emit code to check for loop condition */
   Value *condVal = m_condExpr->codegen();
@@ -60,17 +61,18 @@ Value *ForExpressionsAST::codegen() {
   Value *stepVal = m_stepExpr->codegen();
   if (!stepVal)
     return nullptr;
-  Value *nextVarVal =
-      CodeGeneration::Builder->CreateAdd(variable, stepVal, "nextVarVal");
+
+  Value *curVarValue = CodeGeneration::Builder->CreateLoad(
+      alloca->getAllocatedType(), alloca, m_varName.c_str());
+  Value *nextVarValue =
+      CodeGeneration::Builder->CreateAdd(curVarValue, stepVal, "nextvar");
+  CodeGeneration::Builder->CreateStore(nextVarValue, alloca);
 
   /* jump to beginning of loop */
   CodeGeneration::Builder->CreateBr(loopHeaderBasicB);
 
   /* start of after loop */
   CodeGeneration::Builder->SetInsertPoint(afterBasicB);
-
-  /* add updated value from loop body to phinode */
-  variable->addIncoming(nextVarVal, loopBodyBasicB);
 
   /* reset old Value */
   if (oldVarValue)

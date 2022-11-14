@@ -1,7 +1,32 @@
 #include "BinaryExpressionAST.h"
 #include "CodeGeneration.h"
+#include "VariableExpressionAST.h"
 
 Value *BinaryExpressionAST::codegen() {
+
+  if (m_operation == '=') {
+    // special case
+    VariableExpressionAST *lhsExpr =
+        static_cast<VariableExpressionAST *>(m_lhsExpr.get());
+    if (!lhsExpr)
+      return CodeGeneration::logErrorV(
+          "destination of '=' must be a variable ");
+
+    /* emit code to generate rhs Value */
+    Value *rhsValue = m_rhsExpr->codegen();
+    if (!rhsValue)
+      return nullptr;
+
+    // Look up Variable Name
+    Value *variable = CodeGeneration::NamedValues[lhsExpr->getVariableName()];
+    if (!variable)
+      return CodeGeneration::logErrorV("unknown variable name");
+
+    /* load the rhs value onto the variable in the stack */
+    CodeGeneration::Builder->CreateStore(rhsValue, variable);
+    return rhsValue;
+  }
+
   Value *lhs = m_lhsExpr->codegen();
   Value *rhs = m_rhsExpr->codegen();
 

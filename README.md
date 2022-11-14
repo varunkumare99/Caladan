@@ -6,6 +6,7 @@
    subexpressions, delete unreachable blocks in CFG etc)
 - if-else expression
 - for expression
+- mutable variables
 ### Types
 - int 64bit
 
@@ -69,4 +70,21 @@ Result : 50
 5
 7
 9
+```
+
+```
+>>> func foo(x) {
+		var a=2, b=2 {
+			for i = 1, i < x, 2 {
+				printi(i + a + b)
+			}
+		}
+	}
+	
+>>> foo(10);
+6
+8
+10
+12
+14
 ```

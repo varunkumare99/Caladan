@@ -1,5 +1,6 @@
 #include "CodeGeneration.h"
 #include "Parser.h"
+#include "llvm/IR/Instructions.h"
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Transforms/InstCombine/InstCombine.h"
@@ -11,7 +12,7 @@ namespace CodeGeneration {
 std::unique_ptr<llvm::LLVMContext> TheContext;
 std::unique_ptr<llvm::Module> TheModule;
 std::unique_ptr<llvm::IRBuilder<>> Builder;
-std::map<std::string, llvm::Value *> NamedValues;
+std::map<std::string, llvm::AllocaInst *> NamedValues;
 std::unique_ptr<legacy::FunctionPassManager> TheFPM;
 std::map<std::string, std::unique_ptr<PrototypeAST>> FunctionProtos;
 std::unique_ptr<KaleidoscopeJIT> TheJIT;
@@ -50,4 +51,12 @@ void initializeModuleAndPassManager(void) {
   CodeGeneration::TheFPM->add(createCFGSimplificationPass());
   CodeGeneration::TheFPM->doInitialization();
 }
+
+AllocaInst *createEntryBlockAlloca(Function *currFunction, StringRef varName) {
+  IRBuilder<> irBuilder(&currFunction->getEntryBlock(),
+                        currFunction->getEntryBlock().begin());
+  return irBuilder.CreateAlloca(Type::getInt64Ty(*TheContext), nullptr,
+                                varName);
+}
 } // namespace CodeGeneration
+// namespace CodeGeneration
