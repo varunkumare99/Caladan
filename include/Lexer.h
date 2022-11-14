@@ -20,7 +20,9 @@ public:
     tok_number = -5,
 
     tok_if = -6,
-    tok_else = -7
+    tok_else = -7,
+
+    tok_for = -8
   };
 
   int getToken();

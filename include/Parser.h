@@ -25,6 +25,7 @@ public:
   std::unique_ptr<ExpressionAST> parseIdentifierExpression();
   std::unique_ptr<ExpressionAST> parsePrimary();
   std::unique_ptr<ExpressionAST> parseIfExpression();
+  std::unique_ptr<ExpressionAST> parseForExpression();
   std::unique_ptr<ExpressionAST>
   parseBinaryOperationRHS(int exprPrec, std::unique_ptr<ExpressionAST> lhs);
   std::unique_ptr<PrototypeAST> parsePrototype();

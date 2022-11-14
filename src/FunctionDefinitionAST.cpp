@@ -24,7 +24,7 @@ Function *FunctionDefinitionAST::codegen() {
     CodeGeneration::Builder->CreateRet(retVal);
     verifyFunction(*currFunction);
     // optimizer
-    CodeGeneration::TheFPM->run(*currFunction);
+    /* CodeGeneration::TheFPM->run(*currFunction); */
     return currFunction;
   }
 

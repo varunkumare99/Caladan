@@ -21,6 +21,7 @@ message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 # E.g. if using the C++ header files
 # you will need to enable C++11 support
 # for your compiler.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
@@ -49,4 +50,4 @@ llvm_map_components_to_libnames(
         )
 
 # Link against LLVM libraries
-target_link_libraries(caladan ${llvm_libs})
+target_link_libraries(caladan ${llvm_libs} -rdynamic)

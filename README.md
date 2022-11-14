@@ -4,7 +4,8 @@
 - Functions
 - optimizations (peephole, reassociate expressions, eliminate common
    subexpressions, delete unreachable blocks in CFG etc)
-- if-else
+- if-else expression
+- for expression
 ### Types
 - int 64bit
 
@@ -18,7 +19,6 @@
 - greater than (>)
 
 ### TODO
-- [ ] for
 - [ ] break
 - [ ] continue
 - [ ] while
@@ -54,4 +54,19 @@ Result : 49
 
 >>> foo(30);
 Result : 50
+```
+
+``` 
+>>> func foo(x) {
+		for i=1, i < x, 2 {
+			printi(x)
+		}
+	}
+	
+>>> foo(10);
+1
+3
+5
+7
+9
 ```

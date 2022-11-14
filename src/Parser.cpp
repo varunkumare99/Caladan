@@ -2,6 +2,7 @@
 #include "BinaryExpressionAST.h"
 #include "CallExpressionAST.h"
 #include "CodeGeneration.h"
+#include "ForExpressionAST.h"
 #include "FunctionDefinitionAST.h"
 #include "IfExpressionAST.h"
 #include "NumberExpressionAST.h"
@@ -121,6 +122,8 @@ std::unique_ptr<ExpressionAST> Parser::parsePrimary() {
     return parseParenExpression();
   case Lexer::tok_if:
     return parseIfExpression();
+  case Lexer::tok_for:
+    return parseForExpression();
   }
 }
 std::unique_ptr<ExpressionAST> Parser::parseExpression() {
@@ -149,6 +152,52 @@ std::unique_ptr<PrototypeAST> Parser::parsePrototype() {
 
   getNextToken(); // consume ')'
   return std::make_unique<PrototypeAST>(functionName, std::move(argNames));
+}
+
+std::unique_ptr<ExpressionAST> Parser::parseForExpression() {
+  getNextToken(); // consume 'for'
+
+  if (m_currentToken != Lexer::tok_identifier)
+    return logError("expected identifier after for");
+
+  std::string varName = m_lexer.getIdentifierStr();
+  getNextToken(); // consume 'identifier'
+
+  if (m_currentToken != '=')
+    return logError("expected '=' after for");
+  getNextToken(); // consume '='
+
+  auto startExpr = parseExpression();
+  if (!startExpr)
+    return nullptr;
+
+  if (m_currentToken != ',')
+    return logError("expeted ',' after the start value");
+  getNextToken(); // consume ','
+
+  auto condExpr = parseExpression();
+  if (!condExpr)
+    return nullptr;
+
+  if (m_currentToken != ',')
+    return logError("expeted ',' after the condition");
+  getNextToken(); // consume ';'
+
+  auto stepExpr = parseExpression();
+  if (!stepExpr)
+    return nullptr;
+
+  if (m_currentToken != '{')
+    return logError("expected '}' at beginning of loop body");
+  getNextToken(); // consume '{'
+
+  auto bodyExpr = parseExpression();
+  if (!bodyExpr)
+    return nullptr;
+
+  return std::make_unique<ForExpressionsAST>(
+      varName, std::move(startExpr), std::move(condExpr), std::move(stepExpr),
+      std::move(bodyExpr));
 }
 
 std::unique_ptr<ExpressionAST> Parser::parseIfExpression() {

@@ -18,7 +18,7 @@ Value *BinaryExpressionAST::codegen() {
   case '/':
     return CodeGeneration::Builder->CreateSDiv(lhs, rhs, "divtmp");
   case '%':
-    return CodeGeneration::Builder->CreateSRem(lhs, rhs, "divtmp");
+    return CodeGeneration::Builder->CreateSRem(lhs, rhs, "remdtmp");
   case '<':
     lhs = CodeGeneration::Builder->CreateICmpULT(lhs, rhs, "cmpltmp");
     return CodeGeneration::Builder->CreateZExt(
