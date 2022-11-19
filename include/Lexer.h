@@ -24,7 +24,11 @@ public:
 
     tok_for = -8,
 
-    tok_var = -9
+    tok_var = -9,
+
+    tok_switch = -10,
+    tok_case = -11,
+    tok_default = -12
   };
 
   int getToken();

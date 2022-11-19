@@ -22,6 +22,12 @@ int Lexer::getToken() {
       return tok_for;
     if (m_identifierStr == "var")
       return tok_var;
+    if (m_identifierStr == "switch")
+      return tok_switch;
+    if (m_identifierStr == "case")
+      return tok_case;
+    if (m_identifierStr == "default")
+      return tok_default;
     return tok_identifier;
   }
 

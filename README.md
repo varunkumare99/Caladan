@@ -7,6 +7,8 @@
 - if-else expression
 - for expression
 - mutable variables
+- switch expression
+
 ### Types
 - int 64bit
 
@@ -23,7 +25,7 @@
 - [ ] break
 - [ ] continue
 - [ ] while
-- [ ] switch
+- [ ] list of expressions
 ### Build
 ```
 mkdir build
@@ -56,7 +58,6 @@ Result : 49
 >>> foo(30);
 Result : 50
 ```
-
 ``` 
 >>> func foo(x) {
 		for i=1, i < x, 2 {
@@ -87,4 +88,38 @@ Result : 50
 10
 12
 14
+```
+```
+>>> func foo(x y) {
+		switch(x) {
+			case 5:
+				printi(x + y)
+			case 6:
+				printi(x - y)
+			default:
+				printi(x % y)
+		}
+	}
+
+>>> foo(5, 7);
+12
+
+>>> foo(6, 23);
+-17
+
+>>> foo(100, 7);
+2
+```
+```
+>>> func factorial(x) {
+		if x < 1 {
+			1
+		}
+		else {
+			x * factorial(x-1)
+		}
+	}
+	
+>>> factorial(10);
+36288000
 ```

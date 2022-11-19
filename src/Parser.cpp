@@ -7,12 +7,14 @@
 #include "IfExpressionAST.h"
 #include "NumberExpressionAST.h"
 #include "PrototypeAST.h"
+#include "SwitchExpressionAST.h"
 #include "VarExpressionAST.h"
 #include "VariableExpressionAST.h"
 #include <memory>
 
-std::map<int, int> Parser::m_binaryOpPrecedence{
-    {'=', 2}, {'>', 20}, {'<', 20}, {'+', 20}, {'-', 20}, {'*', 40}, {'/', 40}};
+std::map<int, int> Parser::m_binaryOpPrecedence{{'=', 2},  {'>', 20}, {'<', 20},
+                                                {'+', 20}, {'-', 20}, {'*', 40},
+                                                {'/', 40}, {'%', 20}};
 
 int Parser::getNextToken() { return m_currentToken = m_lexer.getToken(); }
 
@@ -127,6 +129,8 @@ std::unique_ptr<ExpressionAST> Parser::parsePrimary() {
     return parseForExpression();
   case Lexer::tok_var:
     return parseVarExpression();
+  case Lexer::tok_switch:
+    return parseSwitchExpression();
   }
 }
 std::unique_ptr<ExpressionAST> Parser::parseExpression() {
@@ -134,6 +138,58 @@ std::unique_ptr<ExpressionAST> Parser::parseExpression() {
   if (!lhsExpr)
     return nullptr;
   return parseBinaryOperationRHS(0, std::move(lhsExpr));
+}
+
+std::unique_ptr<ExpressionAST> Parser::parseSwitchExpression() {
+  getNextToken(); // consume 'switch'
+
+  if (m_currentToken != '(')
+    return logError("expected '(' after switch");
+  getNextToken(); // consume '('
+
+  auto switchCondExpression = parseExpression();
+  if (m_currentToken != ')')
+    return logError("expected ')' after switch cond");
+  getNextToken(); // consume '('
+
+  if (m_currentToken != '{')
+    return logError("expected '{' after switch cond");
+  getNextToken(); // consume '{'
+
+  std::vector<std::pair<int, std::unique_ptr<ExpressionAST>>> casesExpr;
+  while (m_currentToken == Lexer::tok_case) {
+    getNextToken(); // consume 'case'
+    if (m_currentToken != Lexer::tok_number)
+      return logError("expected integer in case val");
+
+    int caseVal = m_lexer.getNumVal();
+    getNextToken(); // consume integer
+
+    if (m_currentToken != ':')
+      return logError("expected ':' after case condition");
+    getNextToken(); // consume ':'
+
+    auto caseExpr = parseExpression();
+    if (!caseExpr)
+      return nullptr;
+    casesExpr.push_back(std::make_pair(caseVal, std::move(caseExpr)));
+  }
+
+  std::unique_ptr<ExpressionAST> defaultExpr;
+  if (m_currentToken != Lexer::tok_default)
+    return logError("expected default in switch ");
+  else {
+    getNextToken(); // consume 'default'
+    if (m_currentToken != ':')
+      return logError("expected ':' after default");
+    getNextToken(); // consume ':'
+    defaultExpr = parseExpression();
+  }
+
+  getNextToken(); // consume '}' end of var
+  return std::make_unique<SwitchExpressionAST>(std::move(switchCondExpression),
+                                               std::move(defaultExpr),
+                                               std::move(casesExpr));
 }
 
 std::unique_ptr<ExpressionAST> Parser::parseVarExpression() {
