@@ -25,9 +25,12 @@ Value *IfExpressionAST::codegen() {
 
   CodeGeneration::Builder->SetInsertPoint(ifBlockB);
 
-  Value *ifValue = m_ifExpr->codegen();
-  if (!ifValue)
-    return nullptr;
+  Value *ifValue;
+  for (auto index = 0; index < m_ifExpr->expressionList.size(); ++index) {
+    ifValue = m_ifExpr->expressionList[index]->codegen();
+    if (!ifValue)
+      return nullptr;
+  }
 
   CodeGeneration::Builder->CreateBr(mergeBlockB);
   ifBlockB = CodeGeneration::Builder->GetInsertBlock();
@@ -35,9 +38,12 @@ Value *IfExpressionAST::codegen() {
   currFunction->getBasicBlockList().push_back(elseBlockB);
   CodeGeneration::Builder->SetInsertPoint(elseBlockB);
 
-  Value *elseValue = m_elseExpr->codegen();
-  if (!elseValue)
-    return nullptr;
+  Value *elseValue;
+  for (auto index = 0; index < m_elseExpr->expressionList.size(); ++index) {
+    elseValue = m_elseExpr->expressionList[index]->codegen();
+    if (!elseValue)
+      return nullptr;
+  }
 
   CodeGeneration::Builder->CreateBr(mergeBlockB);
   elseBlockB = CodeGeneration::Builder->GetInsertBlock();

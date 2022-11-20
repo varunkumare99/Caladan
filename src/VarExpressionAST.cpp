@@ -36,9 +36,12 @@ Value *VarExpressionsAST::codegen() {
   }
 
   /* generated for body as all vars are in scope */
-  Value *varBodyVal = m_varBody->codegen();
-  if (!varBodyVal)
-    return nullptr;
+  Value *varBodyVal = nullptr;
+  for (auto index = 0; index < m_varBody->expressionList.size(); ++index) {
+    varBodyVal = m_varBody->expressionList[index]->codegen();
+    if (!varBodyVal)
+      return nullptr;
+  }
 
   /* remove vars from scope */
   for (unsigned i = 0; i < m_varNames.size(); ++i) {

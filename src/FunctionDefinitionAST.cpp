@@ -29,14 +29,17 @@ Function *FunctionDefinitionAST::codegen() {
     CodeGeneration::NamedValues[std::string(arg.getName())] = alloca;
   }
 
-  if (Value *retVal = m_body->codegen()) {
-    CodeGeneration::Builder->CreateRet(retVal);
-    verifyFunction(*currFunction);
-    // optimizer
-    /* CodeGeneration::TheFPM->run(*currFunction); */
-    return currFunction;
+  for (int i = 0; i < m_body->expressionList.size(); ++i) {
+    if ((i + 1) < m_body->expressionList.size()) {
+      m_body->expressionList[i]->codegen();
+    } else if (Value *retVal = m_body->expressionList[i]->codegen()) {
+      CodeGeneration::Builder->CreateRet(retVal);
+      verifyFunction(*currFunction);
+      // optimizer
+      CodeGeneration::TheFPM->run(*currFunction);
+      return currFunction;
+    }
   }
-
   currFunction->eraseFromParent();
   return nullptr;
 }

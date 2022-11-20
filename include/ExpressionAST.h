@@ -9,4 +9,7 @@ public:
   virtual Value *codegen() = 0;
 };
 
+struct ExpressionListAST {
+  std::vector<std::unique_ptr<ExpressionAST>> expressionList;
+};
 #endif

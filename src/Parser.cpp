@@ -133,11 +133,24 @@ std::unique_ptr<ExpressionAST> Parser::parsePrimary() {
     return parseSwitchExpression();
   }
 }
+
 std::unique_ptr<ExpressionAST> Parser::parseExpression() {
   auto lhsExpr = parsePrimary();
   if (!lhsExpr)
     return nullptr;
   return parseBinaryOperationRHS(0, std::move(lhsExpr));
+}
+
+std::unique_ptr<ExpressionListAST> Parser::parseExpressionList() {
+  ExpressionListAST expressionListAST;
+  std::unique_ptr<ExpressionAST> currExpr = parseExpression();
+  expressionListAST.expressionList.push_back(std::move(currExpr));
+  while (m_currentToken == ':') {
+    getNextToken(); // consume ':'
+    currExpr = parseExpression();
+    expressionListAST.expressionList.push_back(std::move(currExpr));
+  }
+  return std::make_unique<ExpressionListAST>(std::move(expressionListAST));
 }
 
 std::unique_ptr<ExpressionAST> Parser::parseSwitchExpression() {
@@ -156,7 +169,7 @@ std::unique_ptr<ExpressionAST> Parser::parseSwitchExpression() {
     return logError("expected '{' after switch cond");
   getNextToken(); // consume '{'
 
-  std::vector<std::pair<int, std::unique_ptr<ExpressionAST>>> casesExpr;
+  std::vector<std::pair<int, std::unique_ptr<ExpressionListAST>>> casesExpr;
   while (m_currentToken == Lexer::tok_case) {
     getNextToken(); // consume 'case'
     if (m_currentToken != Lexer::tok_number)
@@ -169,7 +182,7 @@ std::unique_ptr<ExpressionAST> Parser::parseSwitchExpression() {
       return logError("expected ':' after case condition");
     getNextToken(); // consume ':'
 
-    auto caseExpr = parseExpression();
+    auto caseExpr = parseExpressionList();
     if (!caseExpr)
       return nullptr;
     casesExpr.push_back(std::make_pair(caseVal, std::move(caseExpr)));
@@ -230,8 +243,8 @@ std::unique_ptr<ExpressionAST> Parser::parseVarExpression() {
     return logError("expected '{' after var declaration");
   getNextToken(); // consume '{'
 
-  auto bodyExpr = parseExpression();
-  if (!bodyExpr)
+  auto bodyExpr = parseExpressionList();
+  if (bodyExpr->expressionList.size() == 0)
     return nullptr;
 
   getNextToken(); // consume '}' end of var
@@ -297,10 +310,11 @@ std::unique_ptr<ExpressionAST> Parser::parseForExpression() {
     return logError("expected '}' at beginning of loop body");
   getNextToken(); // consume '{'
 
-  auto bodyExpr = parseExpression();
+  auto bodyExpr = parseExpressionList();
   if (!bodyExpr)
     return nullptr;
 
+  getNextToken(); // consume '}'
   return std::make_unique<ForExpressionsAST>(
       varName, std::move(startExpr), std::move(condExpr), std::move(stepExpr),
       std::move(bodyExpr));
@@ -317,8 +331,8 @@ std::unique_ptr<ExpressionAST> Parser::parseIfExpression() {
     return logError("Expected '{' after if condition");
   getNextToken(); // consume '{'
 
-  auto ifExpr = parseExpression();
-  if (!ifExpr)
+  auto ifExpr = parseExpressionList();
+  if (ifExpr->expressionList.size() == 0)
     return nullptr;
 
   if (m_currentToken != '}')
@@ -333,13 +347,11 @@ std::unique_ptr<ExpressionAST> Parser::parseIfExpression() {
     return logError("Expected '{' after if condition");
   getNextToken(); // consume '{'
 
-  auto elseExpr = parseExpression();
-  if (!elseExpr)
+  auto elseExpr = parseExpressionList();
+  if (elseExpr->expressionList.size() == 0)
     return nullptr;
 
-  /* if (m_currentToken != '}') */
-  /* 	return logError("Expected '}' after if condition"); */
-
+  getNextToken(); // consume '}'
   return std::make_unique<IfExpressionAST>(
       std::move(condExpr), std::move(ifExpr), std::move(elseExpr));
 }
@@ -351,21 +363,24 @@ std::unique_ptr<FunctionDefinitionAST> Parser::parseDefinition() {
     return nullptr;
 
   getNextToken(); // consume '{'
-  auto expr = parseExpression();
+  auto expr = parseExpressionList();
   /* getNextToken(); //consume '}' */
 
-  if (expr)
+  if (expr->expressionList.size())
     return std::make_unique<FunctionDefinitionAST>(std::move(proto),
                                                    std::move(expr));
   return nullptr;
 }
 
 std::unique_ptr<FunctionDefinitionAST> Parser::parseTopLevelExpr() {
+  ExpressionListAST expressionListAST;
   if (auto expr = parseExpression()) {
+    expressionListAST.expressionList.push_back(std::move(expr));
     auto proto = std::make_unique<PrototypeAST>("__anon_expr",
                                                 std::vector<std::string>());
-    return std::make_unique<FunctionDefinitionAST>(std::move(proto),
-                                                   std::move(expr));
+    return std::make_unique<FunctionDefinitionAST>(
+        std::move(proto),
+        std::make_unique<ExpressionListAST>(std::move(expressionListAST)));
   }
   return nullptr;
 }

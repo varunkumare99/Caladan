@@ -6,6 +6,7 @@
 #include "llvm/Transforms/InstCombine/InstCombine.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Scalar/GVN.h"
+#include "llvm/Transforms/Utils.h"
 #include <memory>
 
 namespace CodeGeneration {
@@ -45,6 +46,7 @@ void initializeModuleAndPassManager(void) {
   CodeGeneration::TheFPM = std::make_unique<legacy::FunctionPassManager>(
       CodeGeneration::TheModule.get());
 
+  CodeGeneration::TheFPM->add(createPromoteMemoryToRegisterPass());
   CodeGeneration::TheFPM->add(createInstructionCombiningPass());
   CodeGeneration::TheFPM->add(createReassociatePass());
   CodeGeneration::TheFPM->add(createGVNPass());

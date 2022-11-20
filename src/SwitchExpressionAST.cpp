@@ -34,9 +34,13 @@ Value *SwitchExpressionAST::codegen() {
   for (auto i = 0; i < m_casesExpr.size(); ++i) {
     currFunction->getBasicBlockList().push_back(casesBlockB[i]);
     CodeGeneration::Builder->SetInsertPoint(casesBlockB[i]);
-    Value *caseExprValue = m_casesExpr[i].second->codegen();
-    if (!caseExprValue)
-      return nullptr;
+    for (auto index = 0; index < m_casesExpr[i].second->expressionList.size();
+         ++index) {
+      Value *caseExprValue =
+          m_casesExpr[i].second->expressionList[index]->codegen();
+      if (!caseExprValue)
+        return nullptr;
+    }
     CodeGeneration::Builder->CreateBr(endOfSwitchBlockB);
   }
 

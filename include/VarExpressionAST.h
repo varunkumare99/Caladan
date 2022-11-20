@@ -7,13 +7,13 @@ class VarExpressionsAST : public ExpressionAST {
 private:
   std::vector<std::pair<std::string, std::unique_ptr<ExpressionAST>>>
       m_varNames;
-  std::unique_ptr<ExpressionAST> m_varBody;
+  std::unique_ptr<ExpressionListAST> m_varBody;
 
 public:
   VarExpressionsAST(
       std::vector<std::pair<std::string, std::unique_ptr<ExpressionAST>>>
           varNames,
-      std::unique_ptr<ExpressionAST> varBody)
+      std::unique_ptr<ExpressionListAST> varBody)
       : m_varNames(std::move(varNames)), m_varBody(std::move(varBody)) {}
 
   Value *codegen() override;

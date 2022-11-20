@@ -1,13 +1,13 @@
 # Caladan
 - Language built using LLVM.
 ## Features
-- Functions
-- optimizations (peephole, reassociate expressions, eliminate common
-   subexpressions, delete unreachable blocks in CFG etc)
-- if-else expression
-- for expression
-- mutable variables
-- switch expression
+1. Functions
+2. optimizations (peephole, reassociate expressions, eliminate common subexpressions, delete unreachable blocks in CFG etc)
+3. if-else expression
+4. for expression
+5. mutable variables
+6. switch expression
+7. list of expressions
 
 ### Types
 - int 64bit
@@ -25,7 +25,6 @@
 - [ ] break
 - [ ] continue
 - [ ] while
-- [ ] list of expressions
 ### Build
 ```
 mkdir build
@@ -59,6 +58,8 @@ Result : 49
 Result : 50
 ```
 ``` 
+>>> extern printi(x); //print integer x
+
 >>> func foo(x) {
 		for i=1, i < x, 2 {
 			printi(x)
@@ -122,4 +123,19 @@ Result : 50
 	
 >>> factorial(10);
 36288000
+```
+``` 
+>>> func fibonacci(x) {
+		var a = 1, b = 1, c {
+			for i = 3, i < x, 1 {
+				c = a + b:
+				a = b:
+				b = c
+			}:
+			b
+		}
+	}
+	
+>>> fibonacci(11);
+55
 ```

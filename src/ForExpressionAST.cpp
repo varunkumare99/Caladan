@@ -27,7 +27,11 @@ Value *ForExpressionsAST::codegen() {
 
   /* if a variable exists with same name as for variable, then save it , and
    * restore it later */
-  AllocaInst *oldVarValue = CodeGeneration::NamedValues[m_varName];
+  AllocaInst *oldVarValue = nullptr;
+  if (CodeGeneration::NamedValues.find(m_varName) !=
+      CodeGeneration::NamedValues.end()) {
+    oldVarValue = CodeGeneration::NamedValues[m_varName];
+  }
   CodeGeneration::NamedValues[m_varName] = alloca;
 
   /* emit code to check for loop condition */
@@ -54,8 +58,10 @@ Value *ForExpressionsAST::codegen() {
   CodeGeneration::Builder->SetInsertPoint(loopBodyBasicB);
 
   /* emit loopbody code in loopBody basicblock */
-  if (!m_bodyExpr->codegen())
-    return nullptr;
+  for (auto index = 0; index < m_bodyExpr->expressionList.size(); ++index) {
+    if (!m_bodyExpr->expressionList[index]->codegen())
+      return nullptr;
+  }
 
   /* update the for variable */
   Value *stepVal = m_stepExpr->codegen();

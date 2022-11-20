@@ -20,6 +20,7 @@ public:
   static std::unique_ptr<PrototypeAST> logErrorP(const char *str);
 
   std::unique_ptr<ExpressionAST> parseExpression();
+  std::unique_ptr<ExpressionListAST> parseExpressionList();
   std::unique_ptr<ExpressionAST> parseNumberExpression();
   std::unique_ptr<ExpressionAST> parseParenExpression();
   std::unique_ptr<ExpressionAST> parseIdentifierExpression();
