@@ -10,6 +10,7 @@
 #include "SwitchExpressionAST.h"
 #include "VarExpressionAST.h"
 #include "VariableExpressionAST.h"
+#include "WhileExpressionAST.h"
 #include <memory>
 
 std::map<int, int> Parser::m_binaryOpPrecedence{{'=', 2},  {'>', 20}, {'<', 20},
@@ -131,6 +132,8 @@ std::unique_ptr<ExpressionAST> Parser::parsePrimary() {
     return parseVarExpression();
   case Lexer::tok_switch:
     return parseSwitchExpression();
+  case Lexer::tok_while:
+    return parseWhileExpression();
   }
 }
 
@@ -311,13 +314,35 @@ std::unique_ptr<ExpressionAST> Parser::parseForExpression() {
   getNextToken(); // consume '{'
 
   auto bodyExpr = parseExpressionList();
-  if (!bodyExpr)
+  if (bodyExpr->expressionList.size() == 0)
     return nullptr;
 
   getNextToken(); // consume '}'
   return std::make_unique<ForExpressionsAST>(
       varName, std::move(startExpr), std::move(condExpr), std::move(stepExpr),
       std::move(bodyExpr));
+}
+
+std::unique_ptr<ExpressionAST> Parser::parseWhileExpression() {
+  getNextToken(); // consume 'while'
+
+  auto whileCondExpr = parseExpression();
+  if (!whileCondExpr)
+    return nullptr;
+
+  if (m_currentToken != '{')
+    return logError("expected '{' after while condition");
+  getNextToken(); // consume '{'
+
+  auto whileBodyExpr = parseExpressionList();
+  if (whileBodyExpr->expressionList.size() == 0)
+    return nullptr;
+  if (m_currentToken != '}')
+    return logError("exprected '}' end while body");
+  getNextToken(); // consume '}'
+
+  return std::make_unique<WhileExpressionAST>(std::move(whileCondExpr),
+                                              std::move(whileBodyExpr));
 }
 
 std::unique_ptr<ExpressionAST> Parser::parseIfExpression() {

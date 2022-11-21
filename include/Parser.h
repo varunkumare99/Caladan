@@ -26,6 +26,7 @@ public:
   std::unique_ptr<ExpressionAST> parseIdentifierExpression();
   std::unique_ptr<ExpressionAST> parsePrimary();
   std::unique_ptr<ExpressionAST> parseIfExpression();
+  std::unique_ptr<ExpressionAST> parseWhileExpression();
   std::unique_ptr<ExpressionAST> parseForExpression();
   std::unique_ptr<ExpressionAST> parseVarExpression();
   std::unique_ptr<ExpressionAST> parseSwitchExpression();

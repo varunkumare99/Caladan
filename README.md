@@ -8,6 +8,7 @@
 5. mutable variables
 6. switch expression
 7. list of expressions
+8. while expression
 
 ### Types
 - int 64bit
@@ -24,7 +25,13 @@
 ### TODO
 - [ ] break
 - [ ] continue
-- [ ] while
+- [ ] global variables
+- [ ] typed variables
+- [ ] arrays
+- [ ] structs
+- [ ] vectors
+- [ ] heap
+- [ ] oops
 ### Build
 ```
 mkdir build
@@ -36,6 +43,8 @@ ninja
 ### Examples
 
 ```
+function definition:
+
 >>> func foo(x y) {
 	x*x + 2*x*y + y*y
 }
@@ -45,6 +54,8 @@ Result : 49
 
 ```
 ```
+if-else expression:
+
 >>> func foo(x) {
 	if x > 10 {
 		x + 20
@@ -58,6 +69,8 @@ Result : 49
 Result : 50
 ```
 ``` 
+for expression:
+
 >>> extern printi(x); //print integer x
 
 >>> func foo(x) {
@@ -75,6 +88,8 @@ Result : 50
 ```
 
 ```
+variable expression:
+
 >>> func foo(x) {
 		var a=2, b=2 {
 			for i = 1, i < x, 2 {
@@ -91,6 +106,8 @@ Result : 50
 14
 ```
 ```
+switch expression:
+
 >>> func foo(x y) {
 		switch(x) {
 			case 5:
@@ -138,4 +155,20 @@ Result : 50
 	
 >>> fibonacci(11);
 55
+```
+```
+while expression:
+
+>>> func factorial(x) {
+		var a = 1, res = 1 {
+			while a < (x+1) {
+				res = res * a:
+				a = a + 1
+			}:
+			res
+		}
+	}
+	
+>>> factorial(5);
+120
 ```

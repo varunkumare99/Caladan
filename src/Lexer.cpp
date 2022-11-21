@@ -28,6 +28,8 @@ int Lexer::getToken() {
       return tok_case;
     if (m_identifierStr == "default")
       return tok_default;
+    if (m_identifierStr == "while")
+      return tok_while;
     return tok_identifier;
   }
 

@@ -28,7 +28,9 @@ public:
 
     tok_switch = -10,
     tok_case = -11,
-    tok_default = -12
+    tok_default = -12,
+
+    tok_while = -13
   };
 
   int getToken();
